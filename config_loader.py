@@ -21,6 +21,7 @@ class Config:
         self.__db_user = os.getenv("DB_USER")
         self.__db_password = os.getenv("DB_PASSWORD")
         self.__django_secret = os.getenv("DJANGO_SECRET")
+        self.__allowed_hosts = os.getenv("ALLOWED_HOSTS", "")
 
     @property
     def db_host(self):
@@ -49,3 +50,7 @@ class Config:
     @property
     def test_flag(self):
         return self.__test_flag.lower() in ("true", "1", "yes")
+
+    @property
+    def allowed_hosts(self):
+        return self.__allowed_hosts.split(",")

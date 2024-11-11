@@ -14,11 +14,13 @@ class Config:
         return cls._instance
 
     def load_config(self):
-        self.__db_host = os.getenv(f"DB_HOST")
-        self.__db_port = os.getenv(f"DB_PORT")
-        self.__db_name = os.getenv(f"DB_NAME")
-        self.__db_user = os.getenv(f"DB_USER")
-        self.__db_password = os.getenv(f"DB_PASSWORD")
+        self.__test_flag = os.getenv("GLOBAL_TEST_FLAG", "false")
+        self.__db_host = os.getenv("DB_HOST")
+        self.__db_port = os.getenv("DB_PORT")
+        self.__db_name = os.getenv("DB_NAME")
+        self.__db_user = os.getenv("DB_USER")
+        self.__db_password = os.getenv("DB_PASSWORD")
+        self.__django_secret = os.getenv("DJANGO_SECRET")
 
     @property
     def db_host(self):
@@ -39,3 +41,11 @@ class Config:
     @property
     def db_password(self):
         return self.__db_password
+
+    @property
+    def django_secret(self):
+        return self.__django_secret
+
+    @property
+    def test_flag(self):
+        return self.__test_flag.lower() in ("true", "1", "yes")

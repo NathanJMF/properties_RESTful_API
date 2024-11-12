@@ -65,3 +65,119 @@ def basic_write_dict(conn, schema_name, table_name, data_dict, primary_key_colum
         print("Error executing write:", e)
         conn.rollback()
         return None
+
+
+def create_schema(conn, schema_name):
+    create_schema_query = sql.SQL("CREATE SCHEMA IF NOT EXISTS {}").format(sql.Identifier(schema_name))
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute(create_schema_query)
+            conn.commit()
+            print(f"Schema '{schema_name}' has been created or already exists.")
+    except psycopg2.Error as e:
+        print("Error creating schema:", e)
+        conn.rollback()
+
+
+def create_minimal_table(conn, schema_name, table_name, primary_key_column_name):
+    create_table_query = sql.SQL(
+        "CREATE TABLE IF NOT EXISTS {}.{} ({} SERIAL PRIMARY KEY);"
+    ).format(
+        sql.Identifier(schema_name),
+        sql.Identifier(table_name),
+        sql.Identifier(primary_key_column_name)
+    )
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute(create_table_query)
+            print(
+                f"Table '{table_name}' created in schema '{schema_name}' with primary key '{primary_key_column_name}'.")
+            conn.commit()
+    except psycopg2.Error as e:
+        print("Error creating table:", e)
+        conn.rollback()
+
+
+def add_columns_to_table(conn, schema_name, table_name, columns):
+    check_column_exists_query = sql.SQL(
+        "SELECT EXISTS ("
+        "SELECT 1 "
+        "FROM information_schema.columns "
+        "WHERE table_schema = %s AND table_name = %s AND column_name = %s);"
+    )
+    add_column_query = sql.SQL("ALTER TABLE {}.{} ADD COLUMN {} {};")
+
+    try:
+        with conn.cursor() as cursor:
+            for column, data_type in columns.items():
+                cursor.execute(check_column_exists_query, (schema_name, table_name, column))
+                column_exists = cursor.fetchone()[0]
+
+                if not column_exists:
+                    cursor.execute(
+                        add_column_query.format(
+                            sql.Identifier(schema_name),
+                            sql.Identifier(table_name),
+                            sql.Identifier(column),
+                            sql.SQL(data_type)
+                        )
+                    )
+                    print(f"Added column '{column}' of type '{data_type}' to '{table_name}' in schema '{schema_name}'.")
+            conn.commit()
+    except psycopg2.Error as e:
+        print("Error adding columns:", e)
+        conn.rollback()
+
+
+def add_foreign_keys_to_table(conn, schema_name, table_name, foreign_keys):
+    if not foreign_keys:
+        return
+
+    alter_column_null_status_query = sql.SQL("ALTER TABLE {}.{} ALTER COLUMN {} DROP NOT NULL;")
+    check_foreign_key_exists_query = "SELECT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = %s);"
+    add_foreign_key_base_query = sql.SQL("ALTER TABLE {}.{} ADD CONSTRAINT {} FOREIGN KEY ({}) REFERENCES {}({});")
+
+    try:
+        with conn.cursor() as cursor:
+            for fk in foreign_keys:
+                fk_column = fk['foreign_key_column']
+                ref_schema = fk['reference_schema']
+                ref_table = fk['reference_table']
+                ref_column = fk['reference_column']
+                is_nullable = fk['is_nullable']
+
+                # Adjust column nullability if specified
+                if is_nullable:
+                    cursor.execute(
+                        alter_column_null_status_query.format(
+                            sql.Identifier(schema_name),
+                            sql.Identifier(table_name),
+                            sql.Identifier(fk_column)
+                        )
+                    )
+                    print(f"Column '{fk_column}' in '{table_name}' set to nullable as specified for foreign key.")
+
+                # Foreign key name
+                fk_name = f"fk_{schema_name}_{table_name}_{fk_column}_{ref_table}"
+
+                # Check if the foreign key constraint already exists
+                cursor.execute(check_foreign_key_exists_query, (fk_name,))
+                fk_exists = cursor.fetchone()[0]
+
+                if not fk_exists:
+                    # Add foreign key if it doesn't exist
+                    add_fk_query = add_foreign_key_base_query.format(
+                        sql.Identifier(schema_name),
+                        sql.Identifier(table_name),
+                        sql.Identifier(fk_name),
+                        sql.Identifier(fk_column),
+                        sql.SQL("{}.{}").format(sql.Identifier(ref_schema), sql.Identifier(ref_table)),
+                        sql.Identifier(ref_column)
+                    )
+                    cursor.execute(add_fk_query)
+                    print(
+                        f"Foreign key '{fk_name}' added to '{table_name}' referencing '{ref_table}({ref_column})'. Nullable: {is_nullable}")
+            conn.commit()
+    except psycopg2.Error as e:
+        print("Error adding foreign keys:", e)
+        conn.rollback()

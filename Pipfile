@@ -5,6 +5,8 @@ name = "pypi"
 
 [packages]
 psycopg2 = "*"
+flask-restful = "*"
+flask = "*"
 
 [dev-packages]
 

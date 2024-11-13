@@ -29,3 +29,19 @@ def get_property_by_id(conn, property_id):
     values = [property_id,]
     current_property = database_system.core.basic_lookup(conn, query, values)
     return current_property
+
+
+def write_new_property(conn, property_details):
+    property_table_structure = database_system.structure.get_table_properties()
+    schema_name = property_table_structure["schema_name"]
+    table_name = property_table_structure["table_name"]
+    primary_key_column = property_table_structure["primary_key"]
+    new_property_id = database_system.core.basic_write_dict(
+        conn,
+        schema_name,
+        table_name,
+        property_details,
+        primary_key_column,
+        True
+    )
+    return new_property_id

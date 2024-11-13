@@ -45,3 +45,13 @@ def write_new_property(conn, property_details):
         True
     )
     return new_property_id
+
+
+def delete_property_by_id(conn, property_id):
+    property_table_structure = database_system.structure.get_table_properties()
+    schema_name = property_table_structure["schema_name"]
+    table_name = property_table_structure["table_name"]
+    primary_key_column = property_table_structure["primary_key"]
+    entry_deleted_flag = database_system.core.basic_delete_entry(conn, schema_name, table_name, primary_key_column,
+                                                                 property_id)
+    return entry_deleted_flag

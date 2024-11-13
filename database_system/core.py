@@ -67,6 +67,30 @@ def basic_write_dict(conn, schema_name, table_name, data_dict, primary_key_colum
         return None
 
 
+def basic_delete_entry(conn, schema_name, table_name, primary_key_column, entry_id):
+    # Prepare the DELETE statement
+    delete_query = sql.SQL("DELETE FROM {}.{} WHERE {} = %s;").format(
+        sql.Identifier(schema_name),
+        sql.Identifier(table_name),
+        sql.Identifier(primary_key_column)
+    )
+    try:
+        with conn.cursor() as cursor:
+            # Execute the delete query
+            cursor.execute(delete_query, (entry_id,))
+            # Check if any row was deleted
+            if cursor.rowcount == 0:
+                # No record was deleted, likely because it didn't exist
+                return False
+            conn.commit()
+            return True
+    except psycopg2.Error as e:
+        # Rollback the transaction if there's an error
+        print("Error executing delete:", e)
+        conn.rollback()
+        return False
+
+
 def create_schema(conn, schema_name):
     create_schema_query = sql.SQL("CREATE SCHEMA IF NOT EXISTS {}").format(sql.Identifier(schema_name))
     try:

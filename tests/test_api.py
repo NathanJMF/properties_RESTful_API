@@ -52,10 +52,32 @@ def test_get_single_property(client, setup_property):
 
 # Test retrieving a property that does not exist
 def test_get_single_property_not_found(client):
-    expected_response_description = "Property could not be found!"
+    expected_response_message = "Property could not be found!"
     current_property_id = 0
     test_endpoint = f"/api/properties/{current_property_id}"
     response = client.get(test_endpoint)
     assert response.status_code == 404
-    assert response.json["description"] == expected_response_description
+    assert response.json["message"] == expected_response_message
+
+
+# Test creating a property using data that should be valid
+def test_create_property_valid(client):
+    expected_response_message = "Property created"
+    test_endpoint = "/api/properties"
+    test_property_entry = {
+        "address": "456 New Street",
+        "postcode": "NEW456",
+        "city": "New City",
+        "num_rooms": 4,
+        "created_by": 1
+    }
+    response = client.post(test_endpoint, json=test_property_entry)
+    assert response.status_code == 201
+    assert response.json["message"] == expected_response_message
+    assert isinstance(response.json["property_id"], int)
+    # Clean up after itself
+    conn = database_system.core.get_connection()
+    query_helpers.delete_property_by_id(conn, response.json["property_id"])
+    conn.close()
+
 

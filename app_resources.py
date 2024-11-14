@@ -11,7 +11,7 @@ class Property(Resource):
         if property_id is None:
             all_properties = query_helpers.get_all_properties(conn)
             conn.close()
-            return all_properties
+            return all_properties, 200
         try:
             property_id = int(property_id)
         except ValueError:
@@ -20,7 +20,7 @@ class Property(Resource):
         conn.close()
         if not current_property:
             abort(404, description="Property could not be found!")
-        return current_property[0]
+        return current_property[0], 200
 
     def post(self):
         property_argument_parser = get_property_request_parser()

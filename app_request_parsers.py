@@ -6,19 +6,19 @@ def get_property_request_parser():
 
     # Define expected arguments
     property_argument_parser.add_argument(
-        'address', type=str, required=True, help="Address cannot be blank!"
+        "address", type=str, required=True, help="Address cannot be blank!"
     )
     property_argument_parser.add_argument(
-        'postcode', type=str, required=True, help="Postcode cannot be blank!"
+        "postcode", type=str, required=True, help="Postcode cannot be blank!"
     )
     property_argument_parser.add_argument(
-        'city', type=str, required=True, help="City cannot be blank!"
+        "city", type=str, required=True, help="City cannot be blank!"
     )
     property_argument_parser.add_argument(
-        'num_rooms', type=int, required=True, help="Number of rooms must be a positive integer."
+        "num_rooms", type=int, required=True, help="Number of rooms must be a positive integer."
     )
     property_argument_parser.add_argument(
-        'created_by', type=int, required=True, help="Created_by user ID is required."
+        "created_by", type=int, required=True, help="Created_by user ID is required."
     )
 
     return property_argument_parser

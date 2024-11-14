@@ -46,3 +46,12 @@ def test_get_single_property(client, setup_property):
     response = client.get(test_endpoint)
     assert response.status_code == 200
     assert response.json["property_id"] == current_property_id
+
+
+def test_get_single_property_not_found(client):
+    expected_response_description = "Property could not be found!"
+    current_property_id = 999999999
+    test_endpoint = f"/api/properties/{current_property_id}"
+    response = client.get(test_endpoint)
+    assert response.status_code == 404
+    assert response.json["description"] == expected_response_description

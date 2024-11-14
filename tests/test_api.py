@@ -81,3 +81,108 @@ def test_create_property_valid(client):
     conn.close()
 
 
+# Test creating a property with a missing created_by field
+def test_create_property_invalid_missing_user(client):
+    expected_response_message = "Created_by user ID is required and must be an integer."
+    test_endpoint = "/api/properties"
+    test_property_entry = {
+        "address": "456 New Street",
+        "postcode": "NEW456",
+        "city": "New City",
+        "num_rooms": 4
+    }
+    response = client.post(test_endpoint, json=test_property_entry)
+    assert response.status_code == 400
+    assert response.json["message"]["created_by"] == expected_response_message
+
+
+# Test creating a property with a missing num_rooms field
+def test_create_property_invalid_missing_rooms(client):
+    expected_response_message = "Number of rooms must be a positive integer."
+    test_endpoint = "/api/properties"
+    test_property_entry = {
+        "address": "456 New Street",
+        "postcode": "NEW456",
+        "city": "New City",
+        "created_by": 1
+    }
+    response = client.post(test_endpoint, json=test_property_entry)
+    assert response.status_code == 400
+    assert response.json["message"]["num_rooms"] == expected_response_message
+
+
+# Test creating a property with a missing city field
+def test_create_property_invalid_missing_city(client):
+    expected_response_message = "City cannot be blank!"
+    test_endpoint = "/api/properties"
+    test_property_entry = {
+        "address": "456 New Street",
+        "postcode": "NEW456",
+        "num_rooms": 4,
+        "created_by": 1
+    }
+    response = client.post(test_endpoint, json=test_property_entry)
+    assert response.status_code == 400
+    assert response.json["message"]["city"] == expected_response_message
+
+
+# Test creating a property with a missing postcode field
+def test_create_property_invalid_missing_postcode(client):
+    expected_response_message = "Postcode cannot be blank!"
+    test_endpoint = "/api/properties"
+    test_property_entry = {
+        "address": "456 New Street",
+        "city": "New City",
+        "num_rooms": 4,
+        "created_by": 1
+    }
+    response = client.post(test_endpoint, json=test_property_entry)
+    assert response.status_code == 400
+    assert response.json["message"]["postcode"] == expected_response_message
+
+
+# Test creating a property with a missing address field
+def test_create_property_invalid_missing_address(client):
+    expected_response_message = "Address cannot be blank!"
+    test_endpoint = "/api/properties"
+    test_property_entry = {
+        "postcode": "NEW456",
+        "city": "New City",
+        "num_rooms": 4,
+        "created_by": 1
+    }
+    response = client.post(test_endpoint, json=test_property_entry)
+    assert response.status_code == 400
+    assert response.json["message"]["address"] == expected_response_message
+
+
+# Test creating a property with an invalid created_by field
+def test_create_property_invalid_user(client):
+    expected_response_message = "Created_by user ID is required and must be an integer."
+    test_endpoint = "/api/properties"
+    test_property_entry = {
+        "address": "456 New Street",
+        "postcode": "NEW456",
+        "city": "New City",
+        "num_rooms": 4,
+        "created_by": "1TEST"
+    }
+    response = client.post(test_endpoint, json=test_property_entry)
+    assert response.status_code == 400
+    assert response.json["message"]["created_by"] == expected_response_message
+
+
+# Test creating a property with an invalid num_rooms field
+def test_create_property_invalid_rooms(client):
+    expected_response_message = "Number of rooms must be a positive integer."
+    test_endpoint = "/api/properties"
+    test_property_entry = {
+        "address": "456 New Street",
+        "postcode": "NEW456",
+        "city": "New City",
+        "num_rooms": "4TEST",
+        "created_by": 1
+    }
+    response = client.post(test_endpoint, json=test_property_entry)
+    assert response.status_code == 400
+    assert response.json["message"]["num_rooms"] == expected_response_message

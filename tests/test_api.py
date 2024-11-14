@@ -26,7 +26,7 @@ def setup_property():
     current_property_id = query_helpers.write_new_property(conn, test_property)
     conn.close()
     # Pause here giving test access to a property ID known to exist
-    yield current_property_id
+    yield current_property_id, test_property["created_by"]
     # Clean up after test is done
     conn = database_system.core.get_connection()
     query_helpers.delete_property_by_id(conn, current_property_id)
@@ -43,7 +43,7 @@ def test_get_all_properties(client):
 
 # Test retrieving a single property known to exist
 def test_get_single_property(client, setup_property):
-    current_property_id = setup_property
+    current_property_id, _ = setup_property
     test_endpoint = f"/api/properties/{current_property_id}"
     response = client.get(test_endpoint)
     assert response.status_code == 200
@@ -186,3 +186,13 @@ def test_create_property_invalid_rooms(client):
     response = client.post(test_endpoint, json=test_property_entry)
     assert response.status_code == 400
     assert response.json["message"]["num_rooms"] == expected_response_message
+
+
+# Test Deleting a Property
+def test_delete_property_valid(client, setup_property):
+    property_id, created_by = setup_property
+    deletion_headers = {"user_id": created_by}
+    test_endpoint = f"/api/properties/{property_id}"
+    response = client.delete(test_endpoint, headers=deletion_headers)
+    assert response.status_code == 200
+    assert response.json['message'] == "Property deleted successfully"

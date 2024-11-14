@@ -4,9 +4,13 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-django = "*"
-python-dotenv = "*"
-djangorestframework = "*"
+psycopg2 = "*"
+flask-restful = "*"
+flask = "*"
+faker = "*"
+requests = "*"
+pytest = "*"
+pytest-flask = "*"
 
 [dev-packages]
 

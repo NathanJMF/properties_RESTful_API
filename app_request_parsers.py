@@ -18,7 +18,7 @@ def get_property_request_parser():
         "num_rooms", type=int, required=True, help="Number of rooms must be a positive integer."
     )
     property_argument_parser.add_argument(
-        "created_by", type=int, required=True, help="Created_by user ID is required."
+        "created_by", type=int, required=True, help="Created_by user ID is required and must be an integer."
     )
 
     return property_argument_parser

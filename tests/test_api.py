@@ -190,9 +190,79 @@ def test_create_property_invalid_rooms(client):
 
 # Test Deleting a Property
 def test_delete_property_valid(client, setup_property):
+    expected_response_message = "Property deleted successfully"
     property_id, created_by = setup_property
     deletion_headers = {"user_id": created_by}
     test_endpoint = f"/api/properties/{property_id}"
     response = client.delete(test_endpoint, headers=deletion_headers)
     assert response.status_code == 200
-    assert response.json['message'] == "Property deleted successfully"
+    assert response.json['message'] == expected_response_message
+
+
+# Test deletion without a property_id
+def test_delete_property_no_id(client):
+    expected_response_message = "No property ID provided!"
+    test_endpoint = "/api/properties"
+    response = client.delete(test_endpoint)
+    assert response.status_code == 400
+    assert response.json["message"] == expected_response_message
+
+
+# Test deletion without a user_id in headers
+def test_delete_property_no_user_id(client, setup_property):
+    expected_response_message = "No user ID provided!"
+    property_id, _ = setup_property
+    test_endpoint = f"/api/properties/{property_id}"
+    response = client.delete(test_endpoint)
+    assert response.status_code == 400
+    assert response.json["message"] == expected_response_message
+
+
+# Test deletion with an invalid user_id in headers
+def test_delete_property_invalid_user_id(client, setup_property):
+    expected_response_message = "Invalid user ID provided! User ID must be an integer."
+    property_id, _ = setup_property
+    deletion_headers = {"user_id": "invalid_id"}
+    test_endpoint = f"/api/properties/{property_id}"
+    response = client.delete(test_endpoint, headers=deletion_headers)
+    assert response.status_code == 400
+    assert response.json["message"] == expected_response_message
+
+
+# Test deletion of a non-existent property
+def test_delete_property_not_found(client):
+    expected_response_message = "Property could not be found!"
+    test_endpoint = "/api/properties/0"
+    deletion_headers = {"user_id": "1"}
+    response = client.delete(test_endpoint, headers=deletion_headers)
+    assert response.status_code == 404
+    assert response.json["message"] == expected_response_message
+
+
+# Test deletion by a user without authorization
+def test_delete_property_unauthorized(client, setup_property):
+    expected_response_message = "You do not have the rights to delete this property!"
+    property_id, created_by = setup_property
+    deletion_headers = {"user_id": str(created_by + 1)}
+    test_endpoint = f"/api/properties/{property_id}"
+    response = client.delete(test_endpoint, headers=deletion_headers)
+    assert response.status_code == 403
+    assert response.json["message"] == expected_response_message
+
+
+# Test successful deletion by authorized user
+def test_delete_property_success(client, setup_property):
+    expected_response_message = "Property deleted successfully"
+    property_id, created_by = setup_property
+    deletion_headers = {"user_id": str(created_by)}
+    test_endpoint = f"/api/properties/{property_id}"
+    response = client.delete(test_endpoint, headers=deletion_headers)
+    assert response.status_code == 200
+    assert response.json["message"] == expected_response_message
+
+    # Verify property no longer exists
+    conn = database_system.core.get_connection()
+    deleted_property = query_helpers.get_property_by_id(conn, property_id)
+    conn.close()
+    assert isinstance(deleted_property, list)
+    assert len(deleted_property) == 0

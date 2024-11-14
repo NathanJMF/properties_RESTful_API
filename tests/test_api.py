@@ -33,6 +33,7 @@ def setup_property():
     conn.close()
 
 
+# Test getting a list of all properties
 def test_get_all_properties(client):
     test_endpoint = "/api/properties"
     response = client.get(test_endpoint)
@@ -40,6 +41,7 @@ def test_get_all_properties(client):
     assert isinstance(response.json, list)
 
 
+# Test retrieving a single property known to exist
 def test_get_single_property(client, setup_property):
     current_property_id = setup_property
     test_endpoint = f"/api/properties/{current_property_id}"
@@ -48,10 +50,12 @@ def test_get_single_property(client, setup_property):
     assert response.json["property_id"] == current_property_id
 
 
+# Test retrieving a property that does not exist
 def test_get_single_property_not_found(client):
     expected_response_description = "Property could not be found!"
-    current_property_id = 999999999
+    current_property_id = 0
     test_endpoint = f"/api/properties/{current_property_id}"
     response = client.get(test_endpoint)
     assert response.status_code == 404
     assert response.json["description"] == expected_response_description
+

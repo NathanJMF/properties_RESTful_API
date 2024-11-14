@@ -33,7 +33,7 @@ class Property(Resource):
         if new_property_id is None:
             abort(500, description="Error creating property!")
 
-        return {"message": "Property created", "property_id": new_property_id}, 201
+        return {"description": "Property created", "property_id": new_property_id}, 201
 
     def delete(self, property_id=None):
         # Leave if there is no property to delete
@@ -69,4 +69,4 @@ class Property(Resource):
         if not property_deleted_flag:
             abort(500, description="Failed to delete the property!")
 
-        return {"message": "Property deleted successfully"}, 200
+        return {"description": "Property deleted successfully"}, 200

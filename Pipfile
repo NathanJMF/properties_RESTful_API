@@ -8,6 +8,9 @@ psycopg2 = "*"
 flask-restful = "*"
 flask = "*"
 faker = "*"
+requests = "*"
+pytest = "*"
+pytest-flask = "*"
 
 [dev-packages]
 

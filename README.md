@@ -1,4 +1,4 @@
-# ZD Tech Task - Property Management API
+# Property Management API
 
 # Prerequisites
 - Docker
